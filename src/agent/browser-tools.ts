@@ -8,11 +8,17 @@ export interface BrowserToolContext {
   secrets: Record<string, string>;
 }
 
+const targetParam = {
+  type: 'string',
+  description:
+    'Element ref from the latest accessibility snapshot, such as e2 or f1e3.',
+};
+
 export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: 'function',
     function: {
-      name: 'snapshot',
+      name: 'browser_snapshot',
       description:
         'Capture the current page accessibility snapshot with element refs for interaction.',
       parameters: {
@@ -25,14 +31,14 @@ export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: 'function',
     function: {
-      name: 'click',
-      description: 'Click an element identified by an aria-ref from the latest snapshot.',
+      name: 'browser_click',
+      description: 'Click an element identified by a snapshot ref.',
       parameters: {
         type: 'object',
         properties: {
-          ref: { type: 'string', description: 'Element ref such as e2 or f1e3.' },
+          target: targetParam,
+          ref: targetParam,
         },
-        required: ['ref'],
         additionalProperties: false,
       },
     },
@@ -40,16 +46,41 @@ export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: 'function',
     function: {
-      name: 'fill',
+      name: 'browser_type',
       description:
-        'Fill a text input identified by aria-ref. Use %SECRET_NAME% placeholders for sensitive values.',
+        'Fill a text input identified by a snapshot ref. Use %SECRET_NAME% placeholders for sensitive values.',
       parameters: {
         type: 'object',
         properties: {
-          ref: { type: 'string' },
+          target: targetParam,
+          ref: targetParam,
+          text: { type: 'string' },
+          value: { type: 'string' },
+          submit: {
+            type: 'boolean',
+            description: 'If true, press Enter after filling.',
+          },
+        },
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'browser_select_option',
+      description: 'Select dropdown option(s) identified by a snapshot ref.',
+      parameters: {
+        type: 'object',
+        properties: {
+          target: targetParam,
+          ref: targetParam,
+          values: {
+            type: 'array',
+            items: { type: 'string' },
+          },
           value: { type: 'string' },
         },
-        required: ['ref', 'value'],
         additionalProperties: false,
       },
     },
@@ -57,15 +88,14 @@ export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: 'function',
     function: {
-      name: 'select',
-      description: 'Select an option in a select element by aria-ref.',
+      name: 'browser_check',
+      description: 'Check a checkbox or radio identified by a snapshot ref.',
       parameters: {
         type: 'object',
         properties: {
-          ref: { type: 'string' },
-          value: { type: 'string' },
+          target: targetParam,
+          ref: targetParam,
         },
-        required: ['ref', 'value'],
         additionalProperties: false,
       },
     },
@@ -73,15 +103,14 @@ export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: 'function',
     function: {
-      name: 'check',
-      description: 'Check or uncheck a checkbox by aria-ref.',
+      name: 'browser_uncheck',
+      description: 'Uncheck a checkbox identified by a snapshot ref.',
       parameters: {
         type: 'object',
         properties: {
-          ref: { type: 'string' },
-          checked: { type: 'boolean' },
+          target: targetParam,
+          ref: targetParam,
         },
-        required: ['ref', 'checked'],
         additionalProperties: false,
       },
     },
@@ -89,8 +118,9 @@ export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: 'function',
     function: {
-      name: 'press',
-      description: 'Press a keyboard key on the page. Allowed keys: Enter, Tab, Escape, ArrowDown, ArrowUp.',
+      name: 'browser_press_key',
+      description:
+        'Press a keyboard key. Allowed keys: Enter, Tab, Escape, ArrowDown, ArrowUp.',
       parameters: {
         type: 'object',
         properties: {
@@ -105,7 +135,8 @@ export const BROWSER_TOOL_DEFINITIONS: ToolDefinition[] = [
     type: 'function',
     function: {
       name: 'done',
-      description: 'Signal that the requested action has been completed.',
+      description:
+        'Signal that the requested Playwright test action has been completed.',
       parameters: {
         type: 'object',
         properties: {
@@ -137,17 +168,19 @@ export class BrowserTools {
     await this.assertAllowedOrigin();
 
     switch (name) {
-      case 'snapshot':
+      case 'browser_snapshot':
         return this.snapshot();
-      case 'click':
-        return this.click(String(args.ref));
-      case 'fill':
-        return this.fill(String(args.ref), String(args.value));
-      case 'select':
-        return this.select(String(args.ref), String(args.value));
-      case 'check':
-        return this.check(String(args.ref), Boolean(args.checked));
-      case 'press':
+      case 'browser_click':
+        return this.click(readTarget(args));
+      case 'browser_type':
+        return this.type(readTarget(args), readText(args), Boolean(args.submit));
+      case 'browser_select_option':
+        return this.select(readTarget(args), readSelectValues(args));
+      case 'browser_check':
+        return this.check(readTarget(args), true);
+      case 'browser_uncheck':
+        return this.check(readTarget(args), false);
+      case 'browser_press_key':
         return this.press(String(args.key));
       case 'done':
         this.doneSummary = String(args.summary);
@@ -169,16 +202,23 @@ export class BrowserTools {
     return { ok: true, url: this.ctx.page.url() };
   }
 
-  private async fill(ref: string, value: string): Promise<{ ok: true }> {
+  private async type(
+    ref: string,
+    text: string,
+    submit: boolean,
+  ): Promise<{ ok: true }> {
     this.assertRef(ref);
-    const resolved = resolveSecretValue(value, this.ctx.secrets);
+    const resolved = resolveSecretValue(text, this.ctx.secrets);
     await this.ctx.page.locator(`aria-ref=${ref}`).fill(resolved);
+    if (submit) {
+      await this.press('Enter');
+    }
     return { ok: true };
   }
 
-  private async select(ref: string, value: string): Promise<{ ok: true }> {
+  private async select(ref: string, values: string[]): Promise<{ ok: true }> {
     this.assertRef(ref);
-    await this.ctx.page.locator(`aria-ref=${ref}`).selectOption(value);
+    await this.ctx.page.locator(`aria-ref=${ref}`).selectOption(values);
     return { ok: true };
   }
 
@@ -222,4 +262,30 @@ export class BrowserTools {
       throw new Error(`Origin not allowed: ${origin}`);
     }
   }
+}
+
+function readTarget(args: Record<string, unknown>): string {
+  const target = args.target ?? args.ref;
+  if (typeof target !== 'string' || !target) {
+    throw new Error('Missing snapshot target/ref');
+  }
+  return target;
+}
+
+function readText(args: Record<string, unknown>): string {
+  const text = args.text ?? args.value;
+  if (typeof text !== 'string') {
+    throw new Error('Missing text/value to type');
+  }
+  return text;
+}
+
+function readSelectValues(args: Record<string, unknown>): string[] {
+  if (Array.isArray(args.values)) {
+    return args.values.map(String);
+  }
+  if (typeof args.value === 'string') {
+    return [args.value];
+  }
+  throw new Error('Missing values to select');
 }

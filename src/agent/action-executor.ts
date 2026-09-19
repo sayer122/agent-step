@@ -42,9 +42,9 @@ export class ActionExecutor {
         role: 'system',
         content: [
           'You are a browser automation agent operating inside a Playwright test.',
-          'Use only the provided tools. Always start with snapshot.',
-          'Interact using aria-ref values from the latest snapshot.',
-          'Use %SECRET_NAME% placeholders for sensitive fill values.',
+          'Use only the provided tools. Always start with browser_snapshot.',
+          'Interact using snapshot refs via target (or ref).',
+          'Use %SECRET_NAME% placeholders for sensitive browser_type values.',
           'Call done when the requested action is complete.',
           'Do not navigate away from the current origin unless the action requires it.',
         ].join(' '),
