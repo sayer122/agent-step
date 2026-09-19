@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { agentStep } from '@sayer122/playwright-agent-step';
+import { agentStep } from '@sayer122/agent-step';
 
 test('uses agentStep without a fixture', async ({ page }) => {
   await page.goto('/shop');

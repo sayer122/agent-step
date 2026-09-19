@@ -1,4 +1,4 @@
-import type { AgentStepInput } from '@sayer122/playwright-agent-step';
+import type { AgentStepInput } from '@sayer122/agent-step';
 import { expect, test } from './fixtures.js';
 
 const addToBasket: AgentStepInput = {

@@ -48,7 +48,7 @@
     "test:framework": "playwright test --project=framework",
     "test:agentic": "playwright test --project=agentic",
     "test:live": "playwright test --project=live",
-    "test:package": "npm run build && tsc -p examples/consumer/tsconfig.json && node --input-type=module -e \"const pkg = await import('@sayer122/playwright-agent-step'); if (!pkg.agentStep || !pkg.createAgentStep || !pkg.agentStepFixture) throw new Error('Missing public exports')\"",
+    "test:package": "npm run build && tsc -p examples/consumer/tsconfig.json && node --input-type=module -e \"const pkg = await import('@sayer122/agent-step'); if (!pkg.agentStep || !pkg.createAgentStep || !pkg.agentStepFixture) throw new Error('Missing public exports')\"",
     "typecheck": "tsc --noEmit",
     "prepack": "npm run build",
     "prepublishOnly": "npm run typecheck && npm run test:framework && npm run test:package"

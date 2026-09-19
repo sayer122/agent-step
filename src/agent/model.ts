@@ -38,9 +38,9 @@ export function createModelClient(config: AgentConfig): ModelClient {
     apiKey: config.apiKey,
     baseURL,
     defaultHeaders: {
-      'HTTP-Referer': process.env.AGENT_LLM_SITE_URL ?? 'https://github.com/Sayer122/playwright-agent-step',
+      'HTTP-Referer': process.env.AGENT_LLM_SITE_URL ?? 'https://github.com/Sayer122/agent-step',
       'X-OpenRouter-Title':
-        process.env.AGENT_LLM_SITE_NAME ?? 'playwright-agent-step',
+        process.env.AGENT_LLM_SITE_NAME ?? 'agent-step',
     },
   });
 
