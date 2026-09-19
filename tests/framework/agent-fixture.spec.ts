@@ -12,7 +12,7 @@ test.describe('agentStep fixture', () => {
     page,
   }, testInfo) => {
     const modelClient = new FakeModelClient([
-      { toolCalls: [{ id: '1', name: 'snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }] },
       {
         toolCalls: [
           { id: '2', name: 'done', arguments: { summary: 'noop' } },

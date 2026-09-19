@@ -18,13 +18,13 @@ test.describe('AgentRuntime framework tests', () => {
 
     const modelClient = new FakeModelClient([
       {
-        toolCalls: [{ id: '1', name: 'snapshot', arguments: {} }],
+        toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }],
       },
       {
         toolCalls: [
           {
             id: '2',
-            name: 'click',
+            name: 'browser_click',
             arguments: { ref: addRef! },
           },
         ],
@@ -77,7 +77,7 @@ test.describe('AgentRuntime framework tests', () => {
     await page.setContent(DEMO_HTML);
 
     const modelClient = new FakeModelClient([
-      { toolCalls: [{ id: '1', name: 'snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }] },
       {
         toolCalls: [
           { id: '2', name: 'done', arguments: { summary: 'Did nothing' } },
@@ -116,8 +116,8 @@ test.describe('AgentRuntime framework tests', () => {
         toolCalls: [
           {
             id: '1',
-            name: 'click',
-            arguments: { ref: 'e2' },
+            name: 'browser_click',
+            arguments: { target: 'e2' },
           },
         ],
       },
@@ -126,7 +126,7 @@ test.describe('AgentRuntime framework tests', () => {
     // Override chat to return malformed JSON arguments.
     modelClient.chat = async () => ({
       content: null,
-      toolCalls: [{ id: 'bad', name: 'click', arguments: '{not-json' }],
+      toolCalls: [{ id: 'bad', name: 'browser_click', arguments: '{not-json' }],
       usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
     });
 
@@ -150,7 +150,7 @@ test.describe('AgentRuntime framework tests', () => {
     await page.setContent(DEMO_HTML);
 
     const modelClient = new FakeModelClient([
-      { toolCalls: [{ id: '1', name: 'snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }] },
     ]);
 
     await page.goto('https://example.com');
@@ -175,9 +175,9 @@ test.describe('AgentRuntime framework tests', () => {
     await page.setContent(DEMO_HTML);
 
     const modelClient = new FakeModelClient([
-      { toolCalls: [{ id: '1', name: 'snapshot', arguments: {} }] },
-      { toolCalls: [{ id: '2', name: 'snapshot', arguments: {} }] },
-      { toolCalls: [{ id: '3', name: 'snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '2', name: 'browser_snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '3', name: 'browser_snapshot', arguments: {} }] },
     ]);
 
     const runtime = new AgentRuntime({
@@ -204,13 +204,13 @@ test.describe('AgentRuntime framework tests', () => {
     expect(emailRef).toBeTruthy();
 
     const modelClient = new FakeModelClient([
-      { toolCalls: [{ id: '1', name: 'snapshot', arguments: {} }] },
+      { toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }] },
       {
         toolCalls: [
           {
             id: '2',
-            name: 'fill',
-            arguments: { ref: emailRef!, value: '%EMAIL%' },
+            name: 'browser_type',
+            arguments: { target: emailRef!, text: '%EMAIL%' },
           },
         ],
       },
@@ -242,10 +242,10 @@ test.describe('AgentRuntime framework tests', () => {
       secrets: { EMAIL: 'secret@example.com' },
     });
 
-    const fillCall = result.actionTranscript.find(
-      (entry) => entry.type === 'tool_call' && entry.name === 'fill',
+    const typeCall = result.actionTranscript.find(
+      (entry) => entry.type === 'tool_call' && entry.name === 'browser_type',
     );
-    expect(fillCall?.input).toEqual({ ref: emailRef, value: '%EMAIL%' });
+    expect(typeCall?.input).toEqual({ target: emailRef, text: '%EMAIL%' });
     expect(JSON.stringify(result.actionTranscript)).not.toContain('secret@example.com');
   });
 
