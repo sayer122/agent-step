@@ -1,6 +1,6 @@
 {
   "name": "@sayer/agent-step",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Playwright fixture for adding agentic actions to tests and combining them with other test steps",
   "author": "Jack Sayer",
   "license": "MIT",
