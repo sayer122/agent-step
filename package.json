@@ -1,5 +1,5 @@
 {
-  "name": "@sayer122/playwright-agent-step",
+  "name": "@sayer122/agent-step",
   "version": "0.1.0",
   "description": "Runtime agentic test steps for Playwright using plain-language actions and expectations",
   "author": "Jack Sayer",
@@ -21,12 +21,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sayer122/playwright-agent-step.git"
+    "url": "git+https://github.com/Sayer122/agent-step.git"
   },
   "bugs": {
-    "url": "https://github.com/Sayer122/playwright-agent-step/issues"
+    "url": "https://github.com/Sayer122/agent-step/issues"
   },
-  "homepage": "https://github.com/Sayer122/playwright-agent-step#readme",
+  "homepage": "https://github.com/Sayer122/agent-step#readme",
   "publishConfig": {
     "access": "public"
   },
