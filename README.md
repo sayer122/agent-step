@@ -1,5 +1,8 @@
 # agent-step
 
+[![npm version](https://img.shields.io/npm/v/@sayer/agent-step.svg)](https://www.npmjs.com/package/@sayer/agent-step)
+[![npm downloads](https://img.shields.io/npm/dm/@sayer/agent-step.svg)](https://www.npmjs.com/package/@sayer/agent-step)
+
 A Playwright fixture for adding agentic actions to tests and combining them with other test steps.
 
 You keep writing Playwright as usual. When a bit of the UI is annoying to locate, you hand that part to `agentStep` in plain English, then assert the result yourself.
@@ -15,10 +18,10 @@ await expect(page.locator('#badge')).toHaveText('1');
 
 It drives the test's existing `page`. It does not spin up another browser or go through Playwright MCP.
 
-## Install
+## Installation
 
 ```bash
-npm install -D @sayer/agent-step @playwright/test
+npm install @sayer/agent-step
 ```
 
 Needs Playwright 1.63+ and an OpenAI-compatible model that can do tool calling. OpenRouter works.
@@ -116,6 +119,7 @@ It will not run arbitrary JS or leave the current origin. Retries are off so it 
 
 This is not a replacement for Playwright assertions. Use `expect` for anything you actually care about. Pin the model in CI. It will cost tokens and it will flake more than a locator.
 
-## Repo
+## Links
 
-Source is at [github.com/Sayer122/agent-step](https://github.com/Sayer122/agent-step).
+- npm: [npmjs.com/package/@sayer/agent-step](https://www.npmjs.com/package/@sayer/agent-step)
+- Source: [github.com/Sayer122/agent-step](https://github.com/Sayer122/agent-step)
