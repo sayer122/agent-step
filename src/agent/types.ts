@@ -5,6 +5,11 @@ export interface AgentStepInput {
   expect: string[];
   timeout?: number;
   secrets?: Record<string, string>;
+  /**
+   * When true, a verification miss is returned instead of thrown.
+   * Timeouts, tool errors, and origin violations still throw.
+   */
+  soft?: boolean;
 }
 
 export interface AgentStepResult {

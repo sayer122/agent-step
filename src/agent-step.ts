@@ -52,6 +52,18 @@ export function createAgentStep({
           contentType: 'application/json',
         });
 
+        if (!result.verification.passed) {
+          const screenshot = await page
+            .screenshot({ fullPage: true })
+            .catch(() => null);
+          if (screenshot) {
+            await step.attach('agent-failure.png', {
+              body: screenshot,
+              contentType: 'image/png',
+            });
+          }
+        }
+
         return result;
       } catch (error) {
         const screenshot = await page

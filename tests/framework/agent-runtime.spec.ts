@@ -108,6 +108,91 @@ test.describe('AgentRuntime framework tests', () => {
     ).rejects.toBeInstanceOf(AgentStepError);
   });
 
+  test('returns a verification miss when soft is true', async ({
+    page,
+  }, testInfo) => {
+    await page.setContent(DEMO_HTML);
+
+    const modelClient = new FakeModelClient([
+      { toolCalls: [{ id: '1', name: 'browser_snapshot', arguments: {} }] },
+      {
+        toolCalls: [
+          { id: '2', name: 'done', arguments: { summary: 'Did nothing' } },
+        ],
+      },
+      verificationResponse([
+        {
+          criterion: 'The basket badge shows 1',
+          passed: false,
+          evidence: 'Badge still shows 0',
+        },
+      ]),
+    ]);
+
+    const runtime = new AgentRuntime({
+      page,
+      testInfo,
+      modelClient,
+      allowedOrigins: ['null'],
+      maxTurns: 3,
+    });
+
+    const result = await runtime.runStep({
+      action: 'Add the red medium shirt to the basket',
+      expect: ['The basket badge shows 1'],
+      soft: true,
+    });
+
+    expect(result.verification.passed).toBe(false);
+    expect(
+      testInfo.annotations.some(
+        (annotation) =>
+          annotation.type === 'agent-soft-fail' &&
+          annotation.description?.includes('The basket badge shows 1'),
+      ),
+    ).toBe(true);
+  });
+
+  test('still throws action errors when soft is true', async ({
+    page,
+  }, testInfo) => {
+    await page.setContent(DEMO_HTML);
+
+    const modelClient = new FakeModelClient([
+      {
+        toolCalls: [
+          {
+            id: '1',
+            name: 'browser_click',
+            arguments: { target: 'e2' },
+          },
+        ],
+      },
+    ]);
+
+    modelClient.chat = async () => ({
+      content: null,
+      toolCalls: [{ id: 'bad', name: 'browser_click', arguments: '{not-json' }],
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+    });
+
+    const runtime = new AgentRuntime({
+      page,
+      testInfo,
+      modelClient,
+      allowedOrigins: ['null'],
+      maxTurns: 2,
+    });
+
+    await expect(
+      runtime.runStep({
+        action: 'Click add to basket',
+        expect: ['The basket badge shows 1'],
+        soft: true,
+      }),
+    ).rejects.toThrow(/Malformed tool arguments/);
+  });
+
   test('rejects malformed tool arguments', async ({ page }, testInfo) => {
     await page.setContent(DEMO_HTML);
 

@@ -111,6 +111,20 @@ await agentStep({
 
 In the action, tell it to type `%EMAIL%`. The value is filled in the browser and redacted from reports.
 
+## Soft verification
+
+By default a failed `expect` throws. Pass `soft: true` to attach the miss and continue, so later Playwright assertions can still run. Timeouts and tool errors still throw.
+
+```ts
+await agentStep({
+  action: 'Add the red medium shirt to the basket',
+  expect: ['The basket badge shows 1'],
+  soft: true,
+});
+
+await expect(page.locator('#badge')).toHaveText('1');
+```
+
 ## How it behaves
 
 Each `agentStep` is a Playwright `test.step`. It snapshots the page, does a small allowlisted set of actions (`browser_click`, `browser_type`, etc), then asks the model again whether the `expect` lines hold. Transcripts and failures get attached to the report.

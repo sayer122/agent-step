@@ -71,14 +71,15 @@ export class AgentRuntime {
       };
 
       if (!result.verification.passed) {
-        const failed = result.verification.criteria
-          .filter((item) => !item.passed)
-          .map((item) => `- ${item.criterion}: ${item.evidence}`)
-          .join('\n');
-        const prefix = result.verification.inconclusive
-          ? 'Agent verification inconclusive'
-          : 'Agent verification failed';
-        throw new AgentStepError(`${prefix}:\n${failed}`, result);
+        const message = formatVerificationFailure(result);
+        if (input.soft) {
+          this.options.testInfo.annotations.push({
+            type: 'agent-soft-fail',
+            description: message,
+          });
+          return result;
+        }
+        throw new AgentStepError(message, result);
       }
 
       return result;
@@ -104,6 +105,17 @@ export class AgentStepError extends Error {
     super(message);
     this.name = 'AgentStepError';
   }
+}
+
+function formatVerificationFailure(result: AgentStepResult): string {
+  const failed = result.verification.criteria
+    .filter((item) => !item.passed)
+    .map((item) => `- ${item.criterion}: ${item.evidence}`)
+    .join('\n');
+  const prefix = result.verification.inconclusive
+    ? 'Agent verification inconclusive'
+    : 'Agent verification failed';
+  return `${prefix}:\n${failed}`;
 }
 
 function deriveAllowedOrigins(currentUrl: string): string[] {

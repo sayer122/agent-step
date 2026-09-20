@@ -1,6 +1,6 @@
 {
   "name": "@sayer/agent-step",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Playwright fixture for agentic test steps you mix with locators and assertions",
   "author": "Jack Sayer",
   "license": "MIT",
