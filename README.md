@@ -111,6 +111,18 @@ await agentStep({
 
 In the action, tell it to type `%EMAIL%`. The value is filled in the browser and redacted from reports.
 
+## Timeout
+
+Each step gets 60 seconds for the action plus verification. Pass `timeout` in milliseconds if you need longer. This still throws when `soft` is true. It is the agent budget, not Playwright's test timeout, so raise that too if the step can run long.
+
+```ts
+await agentStep({
+  action: 'Add the red medium shirt to the basket',
+  expect: ['The basket badge shows 1'],
+  timeout: 120_000,
+});
+```
+
 ## Soft verification
 
 By default a failed `expect` throws. Pass `soft: true` to attach the miss and continue, so later Playwright assertions can still run. Timeouts and tool errors still throw.
