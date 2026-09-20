@@ -1,9 +1,9 @@
-# agent-step
+# @sayer/agent-step
 
 [![npm version](https://img.shields.io/npm/v/@sayer/agent-step.svg)](https://www.npmjs.com/package/@sayer/agent-step)
 [![npm downloads](https://img.shields.io/npm/dm/@sayer/agent-step.svg)](https://www.npmjs.com/package/@sayer/agent-step)
 
-A Playwright fixture for adding agentic actions to tests and combining them with other test steps.
+`@sayer/agent-step` is a Playwright fixture for adding agentic actions to tests and combining them with other test steps.
 
 You keep writing Playwright as usual. When a bit of the UI is annoying to locate, you hand that part to `agentStep` in plain English, then assert the result yourself.
 
@@ -24,7 +24,7 @@ It drives the test's existing `page`. It does not spin up another browser or go 
 npm install @sayer/agent-step
 ```
 
-Needs Playwright 1.63+ and an OpenAI-compatible model that can do tool calling. OpenRouter works.
+Add `-D` if you only use it in tests. `@playwright/test` is a peer dependency (1.63+). Needs an OpenAI-compatible model that can do tool calling. OpenRouter works.
 
 ## Add it as a fixture
 
