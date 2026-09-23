@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { type ClientOptions } from 'openai';
 import type {
   AgentConfig,
   ChatParams,
@@ -32,16 +32,29 @@ export function loadAgentConfig(): AgentConfig {
   };
 }
 
-export function createModelClient(config: AgentConfig): ModelClient {
+export function modelRequestHeaders(
+  headers?: Record<string, string>,
+): Record<string, string> {
+  return {
+    'HTTP-Referer':
+      process.env.AGENT_LLM_SITE_URL ??
+      'https://github.com/Sayer122/agent-step',
+    'X-OpenRouter-Title': process.env.AGENT_LLM_SITE_NAME ?? 'agent-step',
+    ...normalizeHeaders(headers),
+  };
+}
+
+export function createModelClient(
+  config: AgentConfig,
+  /** `fetch` lets tests observe the outgoing request. */
+  options?: { fetch?: ClientOptions['fetch'] },
+): ModelClient {
   const baseURL = normalizeOpenAICompatibleBaseURL(config.baseURL);
   const client = new OpenAI({
     apiKey: config.apiKey,
     baseURL,
-    defaultHeaders: {
-      'HTTP-Referer': process.env.AGENT_LLM_SITE_URL ?? 'https://github.com/Sayer122/agent-step',
-      'X-OpenRouter-Title':
-        process.env.AGENT_LLM_SITE_NAME ?? 'agent-step',
-    },
+    defaultHeaders: modelRequestHeaders(config.headers),
+    fetch: options?.fetch,
   });
 
   return {
@@ -184,6 +197,29 @@ function truncateJson(value: unknown, max = 800): string {
   } catch {
     return String(value);
   }
+}
+
+function normalizeHeaders(
+  headers?: Record<string, string>,
+): Record<string, string> {
+  if (headers === undefined) return {};
+  if (!headers || typeof headers !== 'object' || Array.isArray(headers)) {
+    throw new Error(
+      'Agent step headers must be an object of string header names and values',
+    );
+  }
+
+  const normalized: Record<string, string> = {};
+  for (const [name, value] of Object.entries(headers)) {
+    if (name.trim() === '') {
+      throw new Error('Agent step header names must be non-empty strings');
+    }
+    if (typeof value !== 'string') {
+      throw new Error(`Agent step header "${name}" must be a string`);
+    }
+    normalized[name] = value;
+  }
+  return normalized;
 }
 
 function toOpenAIMessage(

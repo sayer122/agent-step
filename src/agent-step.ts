@@ -8,13 +8,19 @@ export type AgentStep = (input: AgentStepInput) => Promise<AgentStepResult>;
 export interface CreateAgentStepOptions {
   page: Page;
   testInfo: TestInfo;
+  /**
+   * Extra headers sent on every LLM request for steps created by this factory.
+   * String values only. A name here replaces the built-in attribution header.
+   */
+  headers?: Record<string, string>;
 }
 
 export function createAgentStep({
   page,
   testInfo,
+  headers,
 }: CreateAgentStepOptions): AgentStep {
-  const runtime = new AgentRuntime({ page, testInfo });
+  const runtime = new AgentRuntime({ page, testInfo, headers });
 
   return async (input) => {
     testInfo.annotations.push({

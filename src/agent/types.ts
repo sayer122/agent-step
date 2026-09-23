@@ -54,6 +54,8 @@ export interface AgentRuntimeOptions {
   allowedOrigins?: string[];
   maxTurns?: number;
   defaultTimeout?: number;
+  /** Extra headers sent on every LLM request. */
+  headers?: Record<string, string>;
   /** Override model client for deterministic framework tests. */
   modelClient?: ModelClient;
 }
@@ -102,4 +104,6 @@ export interface AgentConfig {
   baseURL: string;
   apiKey: string;
   model: string;
+  /** Merged over the built-in attribution headers. */
+  headers?: Record<string, string>;
 }

@@ -23,7 +23,11 @@ export class AgentRuntime {
 
     try {
       const modelClient =
-        this.options.modelClient ?? createModelClient(loadAgentConfig());
+        this.options.modelClient ??
+        createModelClient({
+          ...loadAgentConfig(),
+          headers: this.options.headers,
+        });
 
       const allowedOrigins =
         this.options.allowedOrigins ??

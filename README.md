@@ -97,6 +97,36 @@ Same shape works for OpenAI (`https://api.openai.com/v1`) or anything else that 
 
 The model has to support tool calling. If you get "no choices" back, it is usually the model slug or tools not being supported.
 
+## Custom headers
+
+Pass extra LLM headers when you create the step. Values have to be strings. They go out on every model request for that factory, including verification.
+
+```ts
+import { test as base, expect } from '@playwright/test';
+import {
+  createAgentStep,
+  type AgentStepFixtures,
+} from '@sayer/agent-step';
+
+export const test = base.extend<AgentStepFixtures>({
+  agentStep: async ({ page }, use, testInfo) => {
+    await use(
+      createAgentStep({
+        page,
+        testInfo,
+        headers: {
+          'X-Title': 'checkout-tests',
+        },
+      }),
+    );
+  },
+});
+
+export { expect };
+```
+
+A header you set replaces the built-in `HTTP-Referer` or `X-OpenRouter-Title` when the name matches. `agentStepFixture` does not take headers. Use `createAgentStep` in your fixture when you need them.
+
 ## Secrets
 
 Do not put passwords in the prompt. Use a placeholder and pass the real value in `secrets`:
