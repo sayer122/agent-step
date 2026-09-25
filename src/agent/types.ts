@@ -1,7 +1,10 @@
 import type { Page, TestInfo } from '@playwright/test';
 
 export interface AgentStepInput {
-  action: string;
+  /**
+   * What the agent should do. Omit it to only sense-check the current page.
+   */
+  action?: string;
   expect: string[];
   timeout?: number;
   secrets?: Record<string, string>;
@@ -13,7 +16,7 @@ export interface AgentStepInput {
 }
 
 export interface AgentStepResult {
-  action: string;
+  action?: string;
   expect: string[];
   actionTranscript: TranscriptEntry[];
   verification: VerificationResult;

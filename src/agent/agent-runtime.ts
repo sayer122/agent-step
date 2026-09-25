@@ -33,6 +33,7 @@ export class AgentRuntime {
         this.options.allowedOrigins ??
         deriveAllowedOrigins(this.options.page.url());
 
+      const { action, expect } = normalizeStepInput(input);
       const secrets = input.secrets ?? {};
       const ctx = {
         page: this.options.page,
@@ -40,13 +41,19 @@ export class AgentRuntime {
         secrets,
       };
 
-      const actionResult = await new ActionExecutor({
-        modelClient,
-        ctx,
-        action: input.action,
-        maxTurns,
-        signal: controller.signal,
-      }).run();
+      const actionResult = action
+        ? await new ActionExecutor({
+            modelClient,
+            ctx,
+            action,
+            maxTurns,
+            signal: controller.signal,
+          }).run()
+        : {
+            transcript: [],
+            tokenUsage: emptyUsage(),
+            doneSummary: '',
+          };
 
       const snapshotResult = await this.options.page.ariaSnapshotJSON({
         mode: 'ai',
@@ -54,7 +61,7 @@ export class AgentRuntime {
 
       const verificationResult = await new Verifier({
         modelClient,
-        expect: input.expect,
+        expect,
         snapshot: snapshotResult,
         url: this.options.page.url(),
         signal: controller.signal,
@@ -66,8 +73,8 @@ export class AgentRuntime {
       );
 
       const result: AgentStepResult = {
-        action: input.action,
-        expect: input.expect,
+        action,
+        expect,
         actionTranscript: actionResult.transcript,
         verification: verificationResult.verification,
         tokenUsage,
@@ -120,6 +127,29 @@ function formatVerificationFailure(result: AgentStepResult): string {
     ? 'Agent verification inconclusive'
     : 'Agent verification failed';
   return `${prefix}:\n${failed}`;
+}
+
+function normalizeStepInput(input: AgentStepInput): {
+  action?: string;
+  expect: string[];
+} {
+  const action = input.action?.trim() || undefined;
+  if (!Array.isArray(input.expect) || input.expect.length === 0) {
+    throw new Error('agentStep requires at least one expect criterion');
+  }
+
+  const expect = input.expect.map((item) => {
+    if (typeof item !== 'string' || !item.trim()) {
+      throw new Error('agentStep expect criteria must be non-empty strings');
+    }
+    return item.trim();
+  });
+
+  return { action, expect };
+}
+
+function emptyUsage(): TokenUsage {
+  return { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
 }
 
 function deriveAllowedOrigins(currentUrl: string): string[] {

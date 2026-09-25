@@ -23,6 +23,8 @@ const VERIFIER_SYSTEM_PROMPT = [
   'You are a read-only test verifier.',
   'Given an accessibility snapshot and pass criteria, decide whether each criterion is satisfied.',
   'Use only evidence visible in the snapshot or URL.',
+  'A criterion may compare values that appear in different places or formats. Treat equivalent amounts as the same when only formatting, currency symbols, or position differ.',
+  'Do not pass a comparison unless the snapshot contains the values needed to check it.',
   'If evidence is insufficient, set passed=false for that criterion and inconclusive=true.',
   'Respond with a JSON object only. Do not wrap it in markdown.',
   'Required shape:',

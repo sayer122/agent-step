@@ -334,6 +334,88 @@ test.describe('AgentRuntime framework tests', () => {
     expect(JSON.stringify(result.actionTranscript)).not.toContain('secret@example.com');
   });
 
+  test('checks the page without taking an action', async ({ page }, testInfo) => {
+    await page.setContent(DEMO_HTML);
+    const calls: string[] = [];
+    const modelClient = new FakeModelClient([
+      verificationResponse([
+        {
+          criterion: 'The basket badge shows 0',
+          passed: true,
+          evidence: 'Badge text is 0',
+        },
+      ]),
+    ]);
+    const chat = modelClient.chat.bind(modelClient);
+    modelClient.chat = async (params) => {
+      calls.push(params.toolChoice ?? 'auto');
+      return chat(params);
+    };
+
+    const runtime = new AgentRuntime({
+      page,
+      testInfo,
+      modelClient,
+      allowedOrigins: ['null'],
+    });
+
+    const result = await runtime.runStep({
+      expect: ['The basket badge shows 0'],
+    });
+
+    expect(result.verification.passed).toBe(true);
+    expect(result.action).toBeUndefined();
+    expect(result.actionTranscript).toEqual([]);
+    expect(calls).toEqual(['none']);
+    expect(await page.locator('#badge').textContent()).toBe('0');
+  });
+
+  test('treats a blank action as a check', async ({ page }, testInfo) => {
+    await page.setContent(DEMO_HTML);
+    const modelClient = new FakeModelClient([
+      verificationResponse([
+        {
+          criterion: 'The basket badge shows 0',
+          passed: true,
+          evidence: 'Badge text is 0',
+        },
+      ]),
+    ]);
+
+    const runtime = new AgentRuntime({
+      page,
+      testInfo,
+      modelClient,
+      allowedOrigins: ['null'],
+    });
+
+    const result = await runtime.runStep({
+      action: '   ',
+      expect: ['  The basket badge shows 0  '],
+    });
+
+    expect(result.action).toBeUndefined();
+    expect(result.expect).toEqual(['The basket badge shows 0']);
+    expect(result.verification.passed).toBe(true);
+  });
+
+  test('rejects a check with no expect criteria', async ({ page }, testInfo) => {
+    await page.setContent(DEMO_HTML);
+    const modelClient = new FakeModelClient([]);
+    const runtime = new AgentRuntime({
+      page,
+      testInfo,
+      modelClient,
+      allowedOrigins: ['null'],
+    });
+
+    await expect(
+      runtime.runStep({
+        expect: [],
+      }),
+    ).rejects.toThrow(/at least one expect criterion/);
+  });
+
   test('times out long-running steps', async ({ page }, testInfo) => {
     test.setTimeout(5_000);
     await page.setContent(DEMO_HTML);

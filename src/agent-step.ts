@@ -23,12 +23,21 @@ export function createAgentStep({
   const runtime = new AgentRuntime({ page, testInfo, headers });
 
   return async (input) => {
+    const action = input.action?.trim();
+    const expectDescription = Array.isArray(input.expect)
+      ? input.expect.join(' | ')
+      : '';
+
     testInfo.annotations.push({
       type: 'agent-expect',
-      description: input.expect.join(' | '),
+      description: expectDescription,
     });
 
-    return test.step(`agent: ${input.action}`, async (step) => {
+    const title = action
+      ? `agent: ${action}`
+      : `agent: check ${expectDescription}`;
+
+    return test.step(title, async (step) => {
       try {
         const result = await runtime.runStep(input);
 

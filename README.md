@@ -153,6 +153,18 @@ await agentStep({
 });
 ```
 
+## Check without an action
+
+Leave out `action` when the page is already in the state you want to judge. The model does not click or type. It only reads the page and checks `expect`.
+
+```ts
+await agentStep({
+  expect: ['The order total equals the sum of the line items'],
+});
+```
+
+Use this when the numbers or layout are not stable enough for a locator, but the relationship on the page should still hold. Formatting and position can differ. If the snapshot does not contain the values, the check fails.
+
 ## Soft verification
 
 By default a failed `expect` throws. Pass `soft: true` to attach the miss and continue, so later Playwright assertions can still run. Timeouts and tool errors still throw.
