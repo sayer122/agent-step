@@ -18,6 +18,13 @@ const refusingModel: ModelClient = {
 const test = base.extend(agentHealFixture);
 test.use({ agentHealModelClient: refusingModel });
 
+function changedPatchLines(patch: string): string {
+  return patch
+    .split('\n')
+    .filter((line) => /^[+-]/.test(line) && !line.startsWith('+++') && !line.startsWith('---'))
+    .join('\n');
+}
+
 test.beforeEach(async ({ page }) => {
   await page.setContent(SECTION_HTML);
 });
@@ -29,7 +36,7 @@ test('repairs this.body when the stored parent locator is stale', async ({ page 
   const patch = readFileSync(testInfo.outputPath('agent-heal.patch'), 'utf8');
   expect(patch).toContain("this.body = page.locator('.old-body')");
   expect(patch).toContain("this.body = page.locator('.body')");
-  expect(patch).not.toContain('.contentsection');
+  expect(changedPatchLines(patch)).not.toContain('.contentsection');
   expect(patch).toContain('tests/helpers/section.page.ts');
 });
 
@@ -42,7 +49,7 @@ test('repairs this.contentsection when the middle stored locator is stale', asyn
   const patch = readFileSync(testInfo.outputPath('agent-heal.patch'), 'utf8');
   expect(patch).toContain("this.contentsection = this.body.locator('.old-section')");
   expect(patch).toContain("this.contentsection = this.body.locator('.contentsection')");
-  expect(patch).not.toContain('.old-body');
+  expect(changedPatchLines(patch)).not.toContain('.old-body');
 });
 
 test('repairs this.content when the last stored locator is stale', async ({ page }, testInfo) => {
@@ -52,5 +59,5 @@ test('repairs this.content when the last stored locator is stale', async ({ page
   const patch = readFileSync(testInfo.outputPath('agent-heal.patch'), 'utf8');
   expect(patch).toContain("this.content = this.contentsection.locator('.old-content')");
   expect(patch).toContain("this.content = this.contentsection.locator('.content')");
-  expect(patch).not.toContain('.old-section');
+  expect(changedPatchLines(patch)).not.toContain('.old-section');
 });

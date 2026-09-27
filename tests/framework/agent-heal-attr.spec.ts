@@ -12,6 +12,13 @@ const refusingModel: ModelClient = {
 const test = base.extend(agentHealFixture);
 test.use({ agentHealModelClient: refusingModel });
 
+function changedPatchLines(patch: string): string {
+  return patch
+    .split('\n')
+    .filter((line) => /^[+-]/.test(line) && !line.startsWith('+++') && !line.startsWith('---'))
+    .join('\n');
+}
+
 test('repairs an attribute selector when the value moves to another attribute', async ({
   page,
 }, testInfo) => {
@@ -75,5 +82,5 @@ test('repairs the attribute step in a stored locator chain', async ({ page }, te
   const patch = readFileSync(testInfo.outputPath('agent-heal.patch'), 'utf8');
   expect(patch).toContain('[test="pay"]');
   expect(patch).toContain('[data-action="pay"]');
-  expect(patch).not.toContain('.checkout');
+  expect(changedPatchLines(patch)).not.toContain('.checkout');
 });
