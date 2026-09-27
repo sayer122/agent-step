@@ -93,6 +93,8 @@ export AGENT_LLM_MODEL=openai/gpt-4o-mini
 
 `AGENT_LLM_BASE_URL` is the API root. Do not put `/chat/completions` on the end.
 
+Set `AGENT_STEP_DEBUG=true` to print each model request and response, and whether a heal was repaired from the DOM or sent to the model. The API key is not printed. Long snapshots are truncated.
+
 Same shape works for OpenAI (`https://api.openai.com/v1`) or anything else that speaks Chat Completions with tools.
 
 The model has to support tool calling. If you get "no choices" back, it is usually the model slug or tools not being supported.
@@ -152,6 +154,30 @@ await agentStep({
   timeout: 120_000,
 });
 ```
+
+## Heal a broken locator
+
+Extend Playwright's `page` when a test uses class or DOM locators. If an action cannot find its locator, or the locator matches more than one element, healing snapshots the page, retries that action once, and writes a patch you can apply afterward. The spec is not edited during the run.
+
+```ts
+import { test as base, expect } from '@playwright/test';
+import { agentHealFixture } from '@sayer/agent-step';
+
+export const test = base.extend(agentHealFixture);
+export { expect };
+
+test('checkout', async ({ page }) => {
+  await page.locator('.add-to-basket').click();
+});
+```
+
+A page object works when its locators are created from that `page`. A selector such as `.header .body-custom-name:visible .sub-element .blah` is repaired at the segment that stopped matching, and the patch points at the page-object line. A single CSS locator is patched to a unique id, or to a unique class whose name still resembles the old selector. Otherwise the patch uses `getByRole` when that role and name match one element. If no replacement is unique, the action can still pass and no patch is written. The patch is `agent-heal.patch` in that test's output folder. Apply it with `git apply`.
+
+```bash
+git apply test-results/**/agent-heal.patch
+```
+
+An assertion failure, or a timeout after Playwright has already resolved the element, still throws. If the snapshot has no single match, the original error throws too. `agentStepFixture` does not include healing.
 
 ## Check without an action
 

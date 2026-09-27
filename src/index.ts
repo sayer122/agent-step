@@ -5,6 +5,13 @@ export {
   type CreateAgentStepOptions,
 } from './agent-step.js';
 
+export { agentHeal, type AgentHealOptions } from './agent/heal.js';
+
+export {
+  agentHealFixture,
+  type AgentHealFixtures,
+} from './agent-heal-fixture.js';
+
 export {
   agentStepFixture,
   type AgentFixtures,
