@@ -7,7 +7,11 @@
 
 You keep writing Playwright as usual. When a bit of the UI is annoying to locate, you hand that part to `agentStep` in plain English, then assert the result yourself. When a class, attribute, or page-object locator misses, `agentHealFixture` repairs that locator and writes a patch you can apply.
 
+`agentStep` adds the red medium shirt. The Inspector shows that step running, and the basket count goes to 1.
+
 ![agentStep adds the red medium shirt. The basket count goes to 1.](agent-step-demo.gif)
+
+The button on the page is Add to cart. The test still clicks `.add-to-basket`. The Inspector shows that miss, the basket still updates, and the patch changes that one selector to `.add-to-cart`.
 
 ![A renamed Add to cart button. The locator misses, then the basket updates.](agent-heal-demo.gif)
 
