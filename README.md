@@ -3,9 +3,9 @@
 [![npm version](https://img.shields.io/npm/v/@sayer/agent-step.svg)](https://www.npmjs.com/package/@sayer/agent-step)
 [![npm downloads](https://img.shields.io/npm/dm/@sayer/agent-step.svg)](https://www.npmjs.com/package/@sayer/agent-step)
 
-`@sayer/agent-step` is a Playwright fixture for adding agentic actions to tests and combining them with other test steps.
+`@sayer/agent-step` is a Playwright fixture for agent steps you mix with locators and assertions.
 
-You keep writing Playwright as usual. When a bit of the UI is annoying to locate, you hand that part to `agentStep` in plain English, then assert the result yourself.
+You keep writing Playwright as usual. When a bit of the UI is annoying to locate, you hand that part to `agentStep` in plain English, then assert the result yourself. When a class, attribute, or page-object locator misses, `agentHealFixture` repairs that locator and writes a patch you can apply.
 
 ```ts
 await agentStep({
@@ -163,7 +163,7 @@ await agentStep({
 });
 ```
 
-## Heal a broken locator
+## Heal a broken Playwright locator
 
 Extend Playwright's `page` when a test uses class or DOM locators. If an action cannot find its locator, or the locator matches more than one element, healing snapshots the page, retries that action once, and writes a patch you can apply afterward. The spec is not edited during the run.
 

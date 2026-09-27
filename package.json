@@ -1,7 +1,7 @@
 {
   "name": "@sayer/agent-step",
-  "version": "0.2.0",
-  "description": "Playwright fixture for agentic test steps you mix with locators and assertions",
+  "version": "0.2.1",
+  "description": "Playwright fixture for agent steps you mix with locators, and self-healing when a locator misses",
   "author": "Jack Sayer",
   "license": "MIT",
   "type": "module",
@@ -33,15 +33,17 @@
   "keywords": [
     "playwright",
     "playwright-test",
+    "playwright-fixture",
     "fixture",
-    "testing",
     "e2e",
     "agentic",
     "agent-step",
+    "self-healing",
+    "locator",
+    "page-object",
     "llm",
     "openai",
-    "ai-testing",
-    "automation"
+    "ai-testing"
   ],
   "engines": {
     "node": ">=20"
