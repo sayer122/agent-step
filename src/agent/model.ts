@@ -1,4 +1,5 @@
 import OpenAI, { type ClientOptions } from 'openai';
+import { debugLog } from './debug.js';
 import type {
   AgentConfig,
   ChatParams,
@@ -59,6 +60,17 @@ export function createModelClient(
 
   return {
     async chat(params: ChatParams): Promise<ChatResponse> {
+      const started = Date.now();
+      debugLog('llm request', {
+        model: config.model,
+        baseURL,
+        toolChoice: params.toolChoice ?? 'auto',
+        messages: params.messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+          toolCalls: message.toolCalls,
+        })),
+      });
       let response;
       try {
         response = await client.chat.completions.create(
@@ -78,7 +90,15 @@ export function createModelClient(
         throw wrapModelRequestError(error, baseURL, config.model);
       }
 
-      return parseOpenAIChatResponse(response, baseURL, config.model);
+      const parsed = parseOpenAIChatResponse(response, baseURL, config.model);
+      debugLog('llm response', {
+        model: config.model,
+        ms: Date.now() - started,
+        content: parsed.content,
+        toolCalls: parsed.toolCalls,
+        usage: parsed.usage,
+      });
+      return parsed;
     },
   };
 }
