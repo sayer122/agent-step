@@ -512,7 +512,7 @@ async function recordHealPatch(input: {
     return;
   }
 
-  const lines = source.split('\n');
+  const lines = source.replace(/\n$/, '').split('\n');
   const lineIndex = findLineIndex(lines, frame.line, input.from);
   if (lineIndex === undefined) return;
   const updated = replaceLocator(lines[lineIndex], input.from, input.to);
@@ -521,12 +521,18 @@ async function recordHealPatch(input: {
   const rel = relative(process.cwd(), frame.file);
   if (rel.startsWith('..') || isAbsolute(rel)) return;
   const patchFile = rel.split('\\').join('/');
+  const context = 3;
+  const start = Math.max(0, lineIndex - context);
+  const before = lines.slice(start, lineIndex);
+  const after = lines.slice(lineIndex + 1, lineIndex + 1 + context);
   const hunk = [
     `--- a/${patchFile}`,
     `+++ b/${patchFile}`,
-    `@@ -${lineIndex + 1},1 +${lineIndex + 1},1 @@`,
+    `@@ -${start + 1},${before.length + 1 + after.length} +${start + 1},${before.length + 1 + after.length} @@`,
+    ...before.map((line) => ` ${line}`),
     `-${lines[lineIndex]}`,
     `+${updated}`,
+    ...after.map((line) => ` ${line}`),
     '',
   ].join('\n');
   const patchPath = input.testInfo.outputPath('agent-heal.patch');

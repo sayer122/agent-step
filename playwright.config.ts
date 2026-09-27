@@ -27,6 +27,11 @@ export default defineConfig({
       },
     },
     {
+      name: 'demo',
+      testMatch: /demo\/.*\.spec\.ts/,
+      retries: 0,
+    },
+    {
       name: 'live',
       testMatch: /live\/.*\.spec\.ts/,
       retries: 0,
