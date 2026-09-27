@@ -99,6 +99,14 @@ Same shape works for OpenAI (`https://api.openai.com/v1`) or anything else that 
 
 The model has to support tool calling. If you get "no choices" back, it is usually the model slug or tools not being supported.
 
+Tested models:
+
+| Model |
+| --- |
+| `gpt-6-luna` |
+| `gpt-5.6-luna` |
+| `gpt-6-sol` |
+
 ## Custom headers
 
 Pass extra LLM headers when you create the step. Values have to be strings. They go out on every model request for that factory, including verification.
