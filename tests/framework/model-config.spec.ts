@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import type { ClientOptions } from 'openai';
+import { agentStepDebugEnabled } from '../../src/agent/debug.js';
 import {
   createModelClient,
   modelRequestHeaders,
@@ -81,6 +82,27 @@ test.describe('OpenAI-compatible chat responses', () => {
         'openai/gpt-5.6-luna',
       ),
     ).toThrow(/No endpoints found for this model/);
+  });
+});
+
+test.describe('AGENT_STEP_DEBUG', () => {
+  test('turns on only for true, 1, or yes', () => {
+    const previous = process.env.AGENT_STEP_DEBUG;
+    try {
+      delete process.env.AGENT_STEP_DEBUG;
+      expect(agentStepDebugEnabled()).toBe(false);
+      process.env.AGENT_STEP_DEBUG = 'true';
+      expect(agentStepDebugEnabled()).toBe(true);
+      process.env.AGENT_STEP_DEBUG = '1';
+      expect(agentStepDebugEnabled()).toBe(true);
+      process.env.AGENT_STEP_DEBUG = 'yes';
+      expect(agentStepDebugEnabled()).toBe(true);
+      process.env.AGENT_STEP_DEBUG = 'false';
+      expect(agentStepDebugEnabled()).toBe(false);
+    } finally {
+      if (previous === undefined) delete process.env.AGENT_STEP_DEBUG;
+      else process.env.AGENT_STEP_DEBUG = previous;
+    }
   });
 });
 
