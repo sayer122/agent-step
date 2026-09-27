@@ -1,6 +1,6 @@
 {
   "name": "@sayer/agent-step",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Playwright fixture for agent steps you mix with locators, and self-healing when a locator misses",
   "author": "Jack Sayer",
   "license": "MIT",
