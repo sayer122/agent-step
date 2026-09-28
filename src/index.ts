@@ -7,6 +7,8 @@ export {
 
 export { agentHeal, type AgentHealOptions } from './agent/heal.js';
 
+export { createHealingPage } from './agent/heal-page.js';
+
 export {
   agentHealFixture,
   type AgentHealFixtures,

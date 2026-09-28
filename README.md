@@ -145,6 +145,22 @@ export { expect };
 
 A header you set replaces the built-in `HTTP-Referer` or `X-OpenRouter-Title` when the name matches. `agentStepFixture` does not take headers. Use `createAgentStep` in your fixture when you need them.
 
+Healing uses the same headers. Pass them to `createHealingPage`, or set `agentHealHeaders` when you use `agentHealFixture`:
+
+```ts
+import { test as base, expect } from '@playwright/test';
+import { agentHealFixture } from '@sayer/agent-step';
+
+export const test = base.extend(agentHealFixture);
+export { expect };
+
+test.use({
+  agentHealHeaders: {
+    'X-Title': 'checkout-tests',
+  },
+});
+```
+
 ## Secrets
 
 Do not put passwords in the prompt. Use a placeholder and pass the real value in `secrets`:
