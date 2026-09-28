@@ -67,11 +67,22 @@ export interface ModelClient {
   chat(params: ChatParams): Promise<ChatResponse>;
 }
 
+export type ResponseFormat =
+  | { type: 'json_object' }
+  | {
+      type: 'json_schema';
+      jsonSchema: {
+        name: string;
+        schema: Record<string, unknown>;
+        strict?: boolean;
+      };
+    };
+
 export interface ChatParams {
   messages: ChatMessage[];
   tools?: ToolDefinition[];
   toolChoice?: 'auto' | 'none' | 'required';
-  responseFormat?: { type: 'json_object' };
+  responseFormat?: ResponseFormat;
   signal?: AbortSignal;
 }
 

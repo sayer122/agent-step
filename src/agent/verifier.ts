@@ -19,6 +19,35 @@ export interface VerifierResult {
   rawContent: string;
 }
 
+const VERIFIER_RESPONSE_FORMAT = {
+  type: 'json_schema' as const,
+  jsonSchema: {
+    name: 'verification',
+    strict: true,
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        inconclusive: { type: 'boolean' },
+        criteria: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              criterion: { type: 'string' },
+              passed: { type: 'boolean' },
+              evidence: { type: 'string' },
+            },
+            required: ['criterion', 'passed', 'evidence'],
+          },
+        },
+      },
+      required: ['inconclusive', 'criteria'],
+    },
+  },
+};
+
 const VERIFIER_SYSTEM_PROMPT = [
   'You are a read-only test verifier.',
   'Given an accessibility snapshot and pass criteria, decide whether each criterion is satisfied.',
@@ -110,7 +139,7 @@ export class Verifier {
           : []),
       ],
       toolChoice: 'none',
-      responseFormat: { type: 'json_object' },
+      responseFormat: VERIFIER_RESPONSE_FORMAT,
       signal: this.options.signal,
     });
 

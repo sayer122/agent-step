@@ -6,6 +6,7 @@ import {
   modelRequestHeaders,
   normalizeOpenAICompatibleBaseURL,
   parseOpenAIChatResponse,
+  toOpenAIResponseFormat,
 } from '../../src/agent/model.js';
 
 test.describe('OpenAI-compatible base URL', () => {
@@ -82,6 +83,49 @@ test.describe('OpenAI-compatible chat responses', () => {
         'openai/gpt-5.6-luna',
       ),
     ).toThrow(/No endpoints found for this model/);
+  });
+});
+
+test.describe('response format', () => {
+  test('sends json_schema when a schema is provided', async () => {
+    let body: { response_format?: { type?: string; json_schema?: { name?: string } } } =
+      {};
+    const client = createModelClient(
+      {
+        baseURL: 'https://example.test/v1',
+        apiKey: 'test-key',
+        model: 'test-model',
+      },
+      {
+        fetch: (async (_input: RequestInfo | URL, init?: RequestInit) => {
+          body = JSON.parse(String(init?.body));
+          return new Response(
+            JSON.stringify({
+              choices: [{ message: { content: '{"ref":null,"role":null,"name":null}' } }],
+              usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+            }),
+            { status: 200, headers: { 'content-type': 'application/json' } },
+          );
+        }) as never,
+      },
+    );
+
+    await client.chat({
+      messages: [{ role: 'user', content: 'hi' }],
+      responseFormat: {
+        type: 'json_schema',
+        jsonSchema: {
+          name: 'heal_match',
+          schema: { type: 'object', additionalProperties: false },
+        },
+      },
+    });
+
+    expect(body.response_format?.type).toBe('json_schema');
+    expect(body.response_format?.json_schema?.name).toBe('heal_match');
+    expect(toOpenAIResponseFormat({ type: 'json_object' })).toEqual({
+      type: 'json_object',
+    });
   });
 });
 

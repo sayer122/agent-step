@@ -5,6 +5,7 @@ import type {
   ChatParams,
   ChatResponse,
   ModelClient,
+  ResponseFormat,
   TokenUsage,
 } from './types.js';
 
@@ -45,6 +46,31 @@ export function modelRequestHeaders(
   };
 }
 
+export function toOpenAIResponseFormat(
+  format: ResponseFormat | undefined,
+):
+  | { type: 'json_object' }
+  | {
+      type: 'json_schema';
+      json_schema: {
+        name: string;
+        schema: Record<string, unknown>;
+        strict: boolean;
+      };
+    }
+  | undefined {
+  if (!format) return undefined;
+  if (format.type === 'json_object') return { type: 'json_object' };
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: format.jsonSchema.name,
+      schema: format.jsonSchema.schema,
+      strict: format.jsonSchema.strict ?? true,
+    },
+  };
+}
+
 export function createModelClient(
   config: AgentConfig,
   /** `fetch` lets tests observe the outgoing request. */
@@ -82,7 +108,7 @@ export function createModelClient(
               function: tool.function,
             })),
             tool_choice: params.toolChoice ?? 'auto',
-            response_format: params.responseFormat,
+            response_format: toOpenAIResponseFormat(params.responseFormat),
           },
           { signal: params.signal },
         );

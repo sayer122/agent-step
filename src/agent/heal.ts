@@ -10,6 +10,24 @@ import type { ModelClient } from './types.js';
 const HEAL_TIMEOUT_MS = 30_000;
 const REF_PATTERN = /^(?:f\d+)?e\d+$/;
 
+const HEAL_RESPONSE_FORMAT = {
+  type: 'json_schema' as const,
+  jsonSchema: {
+    name: 'heal_match',
+    strict: true,
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        ref: { type: ['string', 'null'] },
+        role: { type: ['string', 'null'] },
+        name: { type: ['string', 'null'] },
+      },
+      required: ['ref', 'role', 'name'],
+    },
+  },
+};
+
 const HEAL_SYSTEM_PROMPT = [
   'You match a failed Playwright locator to one control on the page.',
   'Use only the accessibility snapshot and the Playwright error.',
@@ -261,7 +279,7 @@ async function proposeHeal(
         },
       ],
       toolChoice: 'none',
-      responseFormat: { type: 'json_object' },
+      responseFormat: HEAL_RESPONSE_FORMAT,
       signal: controller.signal,
     });
 
